@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUVAIM HUSSAIN</title>
+    <style>
+        body {
+            background-color: #0a3d0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .container {
+            text-align: center;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            background-color: #1a1a1a;
+            box-shadow: 0 0 15px #00ff00, 0 0 30px rgba(0, 255, 0, 0.5);
+            max-width: 90%;
+            width: 400px;
+            animation: flicker 1.5s infinite alternate;
+        }
+        h1 {
+            font-size: 1.8em;
+            text-shadow: 0 0 8px #00ff00, 0 0 15px #00ff00;
+            margin: 10px 0;
+            animation: blink 0.7s infinite alternate;
+        }
+        input[type="text"] {
+            padding: 8px;
+            font-size: 1em;
+            background-color: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            margin: 8px 0;
+            width: 80%;
+            max-width: 300px;
+            box-shadow: 0 0 10px #00ff00;
+            animation: glow 1.2s ease-in-out infinite alternate;
+        }
+        button {
+            padding: 8px 15px;
+            font-size: 1em;
+            background-color: #00ff00;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 0 10px #00ff00;
+            animation: glow 1.2s ease-in-out infinite alternate;
+        }
+        button:hover {
+            background-color: #00cc00;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        #output {
+            margin-top: 15px;
+            font-size: 1em;
+            word-wrap: break-word;
+            animation: blink 0.9s infinite alternate;
+        }
+        .permission-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #1a1a1a;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 90%;
+            width: 300px;
+            box-shadow: 0 0 15px #00ff00;
+            animation: flicker 1.5s infinite alternate;
+        }
+        .permission-box h2 {
+            font-size: 1.5em;
+            margin: 10px 0;
+            animation: blink 0.7s infinite alternate;
+        }
+        .permission-box p {
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        .name-bottom {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            background-color: #ff0000;
+            color: #ffffff;
+            padding: 5px 10px;
+            border: 2px solid #ffffff;
+            border-radius: 0;
+            animation: blink 0.7s infinite alternate, border-blink 0.7s infinite alternate;
+            display: inline-block;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        @keyframes border-blink {
+            0% { border-color: #ffffff; }
+            50% { border-color: transparent; }
+            100% { border-color: #ffffff; }
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 0 10px #00ff00; }
+            100% { box-shadow: 0 0 20px #00ff00, 0 0 30px rgba(0, 255, 0, 0.7); }
+        }
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+            20%, 24%, 55% { opacity: 0.8; }
+        }
+        @media (max-width: 600px) {
+            .container, .permission-box {
+                width: 90%;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            input[type="text"], button {
+                font-size: 0.9em;
+            }
+            .name-bottom {
+                font-size: 0.7em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="permissionBox" class="permission-box">
+        <h2>Permission Required</h2>
+        <p>This site needs access to your location to proceed. Do you allow?</p>
+        <button onclick="grantPermission()">Allow</button>
+        <button onclick="denyPermission()">Deny</button>
+    </div>
+    <div id="mainContent" class="container" style="display: none;">
+        <h1>RUVAIM HUSSAIN</h1>
+        <div id="inputSection" style="display: none;">
+            <input type="text" id="nameInput" placeholder="Enter Your Name">
+            <br>
+            <button onclick="generateCode()">Enter</button>
+        </div>
+        <div id="output"></div>
+    </div>
+    <div class="name-bottom">RUVAIM HUSSAIN</div>
+
+    <script>
+        // Check if geolocation is supported
+        if (!navigator.geolocation) {
+            console.error('Geolocation not supported by browser.');
+            alert('Geolocation is not supported by your browser. Please use a modern browser.');
+            document.getElementById('permissionBox').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('output').innerHTML = 'Geolocation not supported.';
+            return;
+        }
+
+        let userPosition = null;
+
+        function grantPermission() {
+            console.log('Allow button clicked.');
+            try {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        console.log('Geolocation permission granted:', position);
+                        userPosition = position;
+                        document.getElementById('permissionBox').style.display = 'none';
+                        document.getElementById('mainContent').style.display = 'block';
+                        document.getElementById('inputSection').style.display = 'block';
+                    },
+                    (error) => {
+                        console.error('Geolocation error:', error.message, 'Code:', error.code);
+                        let errorMessage = 'Location access failed: ';
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += 'You denied the location request. Please allow location access in your browser settings.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += 'Location information is unavailable. Ensure your device has GPS or network connectivity.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += 'The request to get your location timed out. Try again or check your network.';
+                                break;
+                            default:
+                                errorMessage += 'An unknown error occurred.';
+                                break;
+                        }
+                        alert(errorMessage);
+                        document.getElementById('permissionBox').style.display = 'none';
+                        document.getElementById('mainContent').style.display = 'block';
+                        document.getElementById('output').innerHTML = errorMessage;
+                    },
+                    { timeout: 10000, enableHighAccuracy: true }
+                );
+            } catch (err) {
+                console.error('Unexpected error in grantPermission:', err);
+                alert('An unexpected error occurred while accessing location. Please try again.');
+                document.getElementById('permissionBox').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('output').innerHTML = 'Unexpected error occurred.';
+            }
+        }
+
+        function denyPermission() {
+            console.log('Deny button clicked.');
+            alert('Location access denied. You cannot proceed without location access.');
+            document.getElementById('permissionBox').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('output').innerHTML = 'Location access denied. Please allow location to use this feature.';
+        }
+
+        function generateCode() {
+            console.log('Enter button clicked.');
+            const name = document.getElementById('nameInput').value.trim();
+            if (!name) {
+                console.log('No name entered.');
+                document.getElementById('output').innerHTML = 'Please enter your name.';
+                return;
+            }
+
+            if (userPosition) {
+                console.log('Using stored position:', userPosition);
+                const lat = userPosition.coords.latitude.toFixed(6);
+                const lon = userPosition.coords.longitude.toFixed(6);
+                document.getElementById('output').innerHTML = 
+                    `User: ${name}<br>Your Code: Latitude ${lat}, Longitude ${lon}`;
+            } else {
+                console.error('No position available.');
+                document.getElementById('output').innerHTML = 
+                    `User: ${name}<br>Location data unavailable. Please allow location access and try again.`;
+            }
+        }
+    </script>
+</body>
+</html>
